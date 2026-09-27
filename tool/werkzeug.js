@@ -386,6 +386,22 @@
       tonKnopf.hidden = false;
     }
 
+    /* Handys spielen Ton nur, wenn ein Fingertipp ihn auslöst. Der
+       Schluss-Tusch kommt aber erst Minuten später von selbst. Darum
+       wird er hier, im Tipp, einmal lautlos angespielt und damit
+       freigeschaltet (Befund Simone am iPhone, 27.09.2026). */
+    if (tonSchluss) {
+      tonSchluss.muted = true;
+      var s = tonSchluss.play();
+      var zurueck = function () {
+        tonSchluss.pause();
+        tonSchluss.currentTime = 0;
+        tonSchluss.muted = false;
+      };
+      if (s && s.then) s.then(zurueck, zurueck); else zurueck();
+    }
+    tonGeraet();
+
     finde('#start').classList.add('weg');
     finde('#seite').hidden = false;
 
@@ -645,15 +661,26 @@
      zur Disco, und die Kundin will ja lesen.
      ---------------------------------------------------------- */
 
+  /* EIN gemeinsames Tongerät für den ganzen Film, angelegt beim
+     Start-Tipp. Ein zweites, später von selbst angelegtes Gerät bleibt
+     am Handy stumm und hat den Schluss-Tusch verschluckt. */
+  var tonGeraetObj = null;
+  function tonGeraet() {
+    if (tonGeraetObj) return tonGeraetObj;
+    var Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    try { tonGeraetObj = new Ctx(); } catch (e) { return null; }
+    if (tonGeraetObj.state === 'suspended') tonGeraetObj.resume();
+    return tonGeraetObj;
+  }
+
   function taktErkennungStarten(audio, fensterSekunden, beiSchlag) {
     if (sanft || !audio) return;
 
-    var Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return;
-
     var ctx, quelle, pruefer;
     try {
-      ctx = new Ctx();
+      ctx = tonGeraet();
+      if (!ctx) return;
       quelle = ctx.createMediaElementSource(audio);
       pruefer = ctx.createAnalyser();
       pruefer.fftSize = 1024;
