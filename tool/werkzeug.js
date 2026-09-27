@@ -367,6 +367,7 @@
       if (tonAus) {
         ton.pause();
         if (tonSchluss) tonSchluss.pause();
+        if (schlussQuelle) { try { schlussQuelle.stop(); } catch (e) {} }
       } else if (ton.currentTime > 0 && !ton.ended) {
         ton.play();
       }
@@ -401,6 +402,7 @@
       if (s && s.then) s.then(zurueck, zurueck); else zurueck();
     }
     tonGeraet();
+    schlussVorladen();
 
     finde('#start').classList.add('weg');
     finde('#seite').hidden = false;
@@ -674,14 +676,31 @@
     return tonGeraetObj;
   }
 
-  function taktErkennungStarten(audio, fensterSekunden, beiSchlag) {
+  /* Den Schluss-Tusch beim Start-Tipp schon komplett ins Tongerät
+     laden. Am Ende spielt ihn dann das Gerät selbst ab, das im Tipp
+     freigeschaltet wurde. Das ist der einzige Weg, der am iPhone
+     zuverlässig klingt (27.09.2026, erster Versuch reichte nicht). */
+  var schlussPuffer = null;
+  var schlussQuelle = null;
+  function schlussVorladen() {
+    var ctx = tonGeraet();
+    if (!ctx || !K.musikSchluss || !window.fetch) return;
+    fetch(K.musikSchluss)
+      .then(function (r) { return r.arrayBuffer(); })
+      .then(function (daten) {
+        ctx.decodeAudioData(daten, function (p) { schlussPuffer = p; }, function () {});
+      })
+      .catch(function () { /* dann bleibt der alte Weg */ });
+  }
+
+  function taktErkennungStarten(audio, fensterSekunden, beiSchlag, fertigeQuelle) {
     if (sanft || !audio) return;
 
     var ctx, quelle, pruefer;
     try {
       ctx = tonGeraet();
       if (!ctx) return;
-      quelle = ctx.createMediaElementSource(audio);
+      quelle = fertigeQuelle || ctx.createMediaElementSource(audio);
       pruefer = ctx.createAnalyser();
       pruefer.fftSize = 1024;
       quelle.connect(pruefer);
@@ -860,6 +879,21 @@
 
   function schlussFeuerwerk() {
     if (!tonSchluss || tonAus) { konfettiStoss(1.4); return; }
+
+    var ctx = tonGeraetObj;
+    if (schlussPuffer && ctx) {
+      if (ctx.state === 'suspended') ctx.resume();
+      schlussQuelle = ctx.createBufferSource();
+      schlussQuelle.buffer = schlussPuffer;
+      var leiser = ctx.createGain();
+      leiser.gain.value = lautstaerke;
+      schlussQuelle.connect(leiser);
+      if (tonKnopf) tonKnopf.hidden = false;
+      if (sanft) leiser.connect(ctx.destination);
+      else taktErkennungStarten(tonSchluss, 6.5, function () { konfettiStoss(1.15); }, leiser);
+      schlussQuelle.start(0);
+      return;
+    }
 
     var p = tonSchluss.play();
     if (p && p.catch) p.catch(function () { /* Ton abgelehnt, alles läuft weiter */ });
