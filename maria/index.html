@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Dein erster Tag online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@500;700;800;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tool/stil.css">
+</head>
+<body>
+
+<script>
+/* ============================================================
+   MARIA MOSCA  ·  MARY BEAUTY
+   Hier drin steht ALLES, was diese Seite individuell macht.
+   Für eine neue Kundin den Ordner VORLAGE kopieren und nur
+   diesen Block austauschen. Am Aufbau ändert sich nie etwas.
+   ============================================================ */
+
+window.KUNDIN = {
+
+  /* ---------- wer ---------- */
+  vorname: 'Maria',
+  firma: 'MARY BEAUTY',
+  datum: '26. September 2026',
+
+  /* ---------- ihre Adresse, direkt anklickbar ---------- */
+  /* Echte Domain (Simone, 26.09.2026). Der Link funktioniert erst nach
+     dem Domain-Umzug am 27.09.2026, danach einmal anklicken und prüfen. */
+  domain: 'mary-beauty.com',
+  domainLink: 'https://mary-beauty.com/',
+
+  /* ---------- Startbildschirm ---------- */
+  knopfText: 'Meine Webseite ist live',
+  startHinweis: 'Ein Klick. Ab heute ist sie ganz offiziell DEINE. ✨',
+
+  /* ---------- die Geburt der Seite ---------- */
+  hero: {
+    /* Bildschirmfoto der Startseite im gezeichneten Laptop.
+       Das Mockup-Video ist bewusst raus (Simone, 19.09.2026):
+       pro Kundin ein Video zu bauen ist zu aufwendig, und der
+       dunkle Bildschirm-Moment funktioniert nur mit einem Bild. */
+    /* Die ganze Szene: Schreibtisch, Tastatur, Hand, Tasse.
+       Standbild aus Simones Mockup-Video (Sekunde 1,6).
+       rahmen: false, weil der Laptop im Foto schon drin ist. */
+    bild: 'arbeitsplatz.png',
+    rahmen: false,
+    /* Erst der Name groß, dann der Satz (Simone, 26.09.2026) */
+    name: 'MARY BEAUTY',
+    satz: 'Deine Seite.\nAb heute für alle sichtbar.'
+  },
+
+  /* ---------- Musik ----------
+     Titel: „Stomp“ von The_Mountain (Pixabay), von Simone ausgewaehlt.
+     Die Mitte ist bewusst herausgeschnitten, sie zog sich.
+     musik        = Anfang, 3 Takte, läuft beim Klick zum Konfetti
+     musikSchluss = Wirbel und der finale Klatscher, läuft unten
+                    beim Schlusswort
+     Auf jeden erkannten Schlag kommt ein Konfetti-Stoss.          */
+  musik: 'musik-anfang.mp3',
+  musikSchluss: 'musik-schluss.mp3',
+  musikLautstaerke: 0.5,
+
+  /* ============================================================
+     TEIL 1  ·  MUT MACHEN
+     Nur Zahlen, die belegbar sind.
+     ============================================================ */
+
+  /* Live geprüft am 26.09.2026: Google 15 (5,0), Beautinda 64 (5,0,
+     „Top Rated"), 32 Leistungen mit Preis in der Preisliste der
+     Webseite, Termin-Knopf führt zur Online-Buchung bei Beautinda.
+     9 Looks laut Stand 24.09. */
+  hat: [
+    { zahl: 79, einheit: 'Bewertungen bei Beautinda und Google', sterne: true, siegel: 'Top Rated',
+      text: 'Sie liest, wie es anderen Frauen bei dir ging. Überall im Schnitt 5,0.' },
+    { zahl: 9, einheit: 'Looks auf deiner Webseite',
+      text: 'Sie sieht vorher und nachher, was bei dir möglich ist.' },
+    { zahl: 32, einheit: 'Leistungen mit Preis',
+      text: 'Sie weiß vorher, was sie bekommt und was es kostet.' },
+    { zahl: 24, anhang: '/7', einheit: 'online buchbar',
+      text: 'Sie bucht rund um die Uhr, auch wenn du gerade arbeitest.' }
+  ],
+
+  hatSchluss: 'So entsteht Vertrauen, noch bevor ihr euch kennt.',
+
+  /* ============================================================
+     TEIL 2  ·  AUSBLICK
+     Höchstens drei. Keine Preise. Steht bewusst ganz unten.
+     ============================================================ */
+
+  /* Folie 4, von Simone am 26.09.2026 freigegeben. Regeln dahinter:
+     chronologisch, nur was Maria nicht selbst kann, nichts, was man
+     „gleich hätte machen können". Marias Ziel: ACADEMY ausbauen.
+     Anmeldeformular baut Simone kostenlos (war schon besprochen). */
+  texte: {
+    t3: 'Dein nächstes Kapitel',
+    v3: 'Die MARY BEAUTY ACADEMY ist der nächste große Schritt. Workshop für Workshop. Bin natürlich gern mit dabei.'
+  },
+
+  /* Schlanke Fassung Z1 mit Effekt E3 (Simone, 26.09.2026). Die Details
+     (Anmeldeformular kostenlos, Termine, Werbeseite, Mail) erzählt
+     Simone im Abschlussgespräch, nicht auf der Folie. */
+  ausblickStil: 'projekte',
+  ausblickKicker: 'Die nächsten Projekte',
+  ausblick: [
+    { gross: true, wann: 'Sobald die Termine stehen', titel: 'Die ACADEMY auf deiner Seite',
+      warum: 'Strategie, Anmeldung und eine Seite, die für deine Workshops wirbt.' },
+    { wann: 'In etwa drei Monaten', titel: 'Zahlen, ausgewertet',
+      warum: 'Welche Suchbegriffe dir Kundinnen bringen, und wo die Texte nachgeschärft werden.' },
+    { wann: 'Passend zur ACADEMY', titel: 'Ein Rechner für die ACADEMY',
+      warum: 'Interessentinnen sehen selbst, was ihnen die Ausbildung bringt.' }
+  ],
+
+  /* Keine Signatur auf Folie 4 (Simone, 26.09.2026): Folie 5 trägt
+     schon „Simone Katz🌸 / Webdesign", sonst doppelt. */
+
+  /* ============================================================
+     SCHLUSSWORT
+     ============================================================ */
+
+  /* Von Simone am 26.09.2026 gewählt (Fassung B + ihr eigener Schlusssatz) */
+  schlusswort: 'Kleines Geheimnis zum Schluss, Maria:\nDie schönsten Seiten entstehen mit Kundinnen wie dir.\nDanke für dein Vertrauen, deine Fragen und\ndeinen Mut bei der ACADEMY-Seite.\nHat riesen Spaß gemacht mit dir!\nGanz viel Erfolg für MARY BEAUTY!'
+};
+</script>
+
+<script src="../tool/werkzeug.js"></script>
+</body>
+</html>
+

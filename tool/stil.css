@@ -1,0 +1,1471 @@
+/* ============================================================
+   Dein erster Tag online — Aussehen
+   Einmal gebaut, danach nicht mehr anfassen.
+   Farben aus Simones Preis-Spickzettel (Pink / Lime / Mitternacht).
+
+   Jedes bewegte Element hat hier einen Zweck:
+   - Konfetti + Kirschblüten: der Moment, selbst ausgelöst
+   - Zeitleiste füllt sich: der Weg wird sichtbar
+   - Zahlen zählen hoch: das Gebündelte wächst vor den Augen
+   - Ausblick zum Aufklappen: die Kundin entscheidet, was sie liest
+   ============================================================ */
+
+:root {
+  --pink: #FF0080;
+  --pink-hell: #FFF3F9;
+  --pink-rand: #F6D3E6;
+  --lime: #C6FF3D;
+  --lime-hell: #F3FFDC;
+  --nacht: #1A1A2E;
+  --nacht-weich: #33334A;
+  --grau: #5E5A66;
+  --grau-hell: #8A8592;
+  --papier: #FFFFFF;
+  /* Fast weiß mit einem Hauch Mitternacht, bewusst KEIN Nude/Beige (Simone, 19.09.2026: "zu brav") */
+  --papier-kuehl: #F8F8FB;
+  --rand: #E6E6EE;
+
+  /* Schrift: Epilogue für alles Große, Inter für Fließtext.
+     Von Simone am 19.09.2026 aus 33 Schriften ausgewählt.
+     Gabarito war ihr zu brav, Epilogue hat mehr Charakter. */
+  --schrift-titel: 'Epilogue', 'Trebuchet MS', sans-serif;
+  --schrift-text: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Zeiten des Laptop-Auftritts. Über den Regler-Kasten einstellbar
+     (Vorschau mit ?regler an der Adresse), danach hier festschreiben. */
+  /* Von Simone am 20.09.2026 über den Regler-Kasten eingestellt */
+  --t-heran: 4.75s;       /* wie lange der Laptop von hinten nach vorn braucht */
+  --t-wach-ab: 2.25s;     /* wann die Seite im Bildschirm erwacht */
+  --t-wach: 1.5s;         /* wie lange das Erwachen dauert */
+  --t-glanz-ab: 3s;       /* wann der Lichtstreifen kommt */
+  --t-name-ab: 4.5s;     /* wann der Firmenname neben dem Laptop kommt */
+  --t-satz-ab: 6s;     /* wann Strich und Satz darunter kommen */
+
+  /* Wie lange eine Folie in die nächste überblendet.
+     Simone am 20.09.2026: der Wechsel dauerte "viel zu lange".
+     Vorher 1,1s, von ihr selbst auf 0,55s gezogen. */
+  --t-wechsel: 0.7s;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Es ist ein Film, keine Seite (Simone, 20.09.2026). Gescrollt wird
+   nichts mehr, die Folien blenden übereinander. */
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: var(--schrift-text);
+  color: var(--nacht);
+  background: var(--papier);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Alles Grosse trägt Epilogue, der Fliesstext bleibt ruhig */
+.start-satz,
+.jubel-satz,
+.jubel-firma,
+.block-titel,
+.hat-zahl,
+.hat-schluss,
+.idee-titel,
+.schluss-text,
+.schluss-name {
+  font-family: var(--schrift-titel);
+}
+
+/* ============================================================
+   Konfetti-Leinwand und fallende Kirschblüten
+   ============================================================ */
+
+#konfetti {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 60;
+}
+
+/* Dauerhaft fallende Kirschblüten im Hintergrund sind bewusst raus
+   (Simone, 19.09.2026): eine einzelne Blüte, die vorbeisegelt, wirkt
+   zufällig statt festlich. Blüten fliegen nur noch im Konfetti mit. */
+
+/* ============================================================
+   Fortschrittsbalken oben: zeigt, die wievielte Folie läuft
+   ============================================================ */
+
+#fortschritt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 4px;
+  width: 0;
+  background: linear-gradient(90deg, var(--pink), var(--lime));
+  z-index: 70;
+  transition: width 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ============================================================
+   Startbildschirm
+   ============================================================ */
+
+#start {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 16px;
+  background:
+    radial-gradient(circle at 20% 15%, var(--pink-hell) 0%, transparent 55%),
+    radial-gradient(circle at 85% 80%, var(--lime-hell) 0%, transparent 50%),
+    var(--papier);
+}
+
+#start.weg { display: none; }
+
+.start-blume {
+  font-size: 44px;
+  line-height: 1;
+  margin-bottom: 28px;
+  animation: wippen 3.4s ease-in-out infinite;
+}
+
+/* Simones Marke, signiert den Startbildschirm unten.
+   Eine Kirschblüte allein erkennt niemand als ihr Zeichen,
+   erst mit Name und Leistung daneben wird sie lesbar. */
+.start-marke {
+  margin-top: 54px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--grau-hell);
+  white-space: nowrap;
+}
+
+.start-marke .blume {
+  font-size: 14px;
+  letter-spacing: 0;
+  margin: 0 3px;
+  vertical-align: -1px;
+}
+
+@keyframes wippen {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50%      { transform: translateY(-9px) rotate(4deg); }
+}
+
+.start-zeile {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--grau-hell);
+  margin-bottom: 20px;
+}
+
+.start-satz {
+  font-size: clamp(24px, 5.2vw, 40px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.22;
+  text-wrap: balance;
+  max-width: 17ch;
+  margin-bottom: 42px;
+}
+
+.knopf-los {
+  position: relative;
+  display: inline-block;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  color: #FFFFFF;
+  background: var(--pink);
+  border: 0;
+  border-radius: 999px;
+  padding: 21px 46px;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(255, 0, 128, 0.28);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+/* Pulsierender Ring: zeigt, dass hier geklickt werden will */
+.knopf-los::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 999px;
+  border: 2px solid var(--pink);
+  opacity: 0;
+  animation: puls 2.4s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes puls {
+  0%   { transform: scale(0.96); opacity: 0.7; }
+  70%  { transform: scale(1.14); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+.knopf-los:hover,
+.knopf-los:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px rgba(255, 0, 128, 0.36);
+}
+
+.knopf-los:active { transform: translateY(0); }
+
+.start-hinweis {
+  font-size: 14px;
+  color: var(--grau-hell);
+  margin-top: 22px;
+}
+
+/* ============================================================
+   Seite nach dem Klick
+   ============================================================ */
+
+#seite[hidden] { display: none; }
+#seite { position: fixed; inset: 0; z-index: 2; }
+
+.bahn {
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ============================================================
+   Die Folien: liegen übereinander, immer nur eine ist zu sehen.
+   Der Wechsel blendet weich, nie hart (Simone, 19.09.2026).
+   ============================================================ */
+
+/* Mittig, aber nie oben abgeschnitten: Ist der Inhalt höher als der
+   Bildschirm, beginnt er oben (margin auto statt align-items center,
+   gefunden 26.09.2026, Überschrift auf Folie 3 war abgeschnitten). */
+.folie > * { margin-top: auto; margin-bottom: auto; }
+
+.folie {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(22px);
+  transition: opacity var(--t-wechsel) cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform var(--t-wechsel) cubic-bezier(0.22, 0.61, 0.36, 1),
+              visibility 0s linear var(--t-wechsel);
+}
+
+.folie.aktiv {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity var(--t-wechsel) cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform var(--t-wechsel) cubic-bezier(0.22, 0.61, 0.36, 1),
+              visibility 0s;
+}
+
+/* Etwas Luft unten, damit die Steuerleiste nichts verdeckt */
+.folie-innen {
+  width: 100%;
+  padding: 40px 0 104px;
+}
+
+.folie--jubel  { background: radial-gradient(circle at 50% 0%, var(--pink-hell) 0%, transparent 64%), var(--papier); text-align: center; }
+.folie--buehne { background: var(--nacht); }
+.folie--nacht  { background: var(--nacht); color: #FFFFFF; }
+.folie--hell   { background: var(--papier-kuehl); }
+.folie--schluss{ background: var(--papier); text-align: center; }
+
+/* ============================================================
+   Jubel-Kopf
+   ============================================================ */
+
+/* Die erste Folie zeigt bewusst NUR "Geschafft" (Simone, 19.09.2026).
+   Der Laptop kommt als eigene Folie danach. */
+
+.jubel-datum {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pink);
+  margin-bottom: 18px;
+}
+
+.jubel-satz {
+  font-size: clamp(38px, 10vw, 96px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-wrap: balance;
+  margin: 0 auto 16px;
+  max-width: 14ch;
+}
+
+/* Schlag auf den Takt: sitzt genau auf jedem Klatscher der Musik */
+.jubel-satz.schlag { animation: schlag 0.3s cubic-bezier(0.3, 1.4, 0.4, 1); }
+
+@keyframes schlag {
+  0%   { transform: scale(1); }
+  32%  { transform: scale(1.055); }
+  100% { transform: scale(1); }
+}
+
+/* Firmenname schreibt sich Buchstabe für Buchstabe */
+.jubel-firma {
+  font-size: clamp(20px, 4.4vw, 34px);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--nacht);
+  text-wrap: balance;
+  max-width: 26ch;
+  margin: 0 auto;
+  min-height: 1.6em;
+}
+
+.jubel-firma .buchstabe {
+  opacity: 0;
+  animation: auftauchen 0.4s ease forwards;
+}
+
+@keyframes auftauchen {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.jubel-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: var(--pink);
+  vertical-align: text-bottom;
+  animation: blinken 0.9s step-end infinite;
+}
+
+@keyframes blinken { 50% { opacity: 0; } }
+
+.jubel-adresse {
+  display: inline-block;
+  margin-top: 30px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--nacht);
+  text-decoration: none;
+  border-bottom: 2px solid var(--lime);
+  padding-bottom: 3px;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.jubel-adresse:hover { color: var(--pink); border-bottom-color: var(--pink); }
+
+/* ============================================================
+   Die Geburt der Seite: der Laptop fährt heran
+   Dunkle Bühne (Simone, 19.09.2026): auf Weiß wirkte er flach.
+   Leitet ausserdem sauber in die nächste Folie über, die ebenfalls
+   dunkel ist.
+   ============================================================ */
+
+.geraet {
+  position: relative;
+  perspective: 1800px;
+  margin: 0 auto;
+  max-width: none;
+  min-height: 100vh;
+  min-height: 100dvh;
+  /* Text links, Laptop rechts (Simone, 19.09.2026). Am Handy untereinander. */
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: center;
+  gap: 3vw;
+  padding: 16px 3vw;
+}
+
+/* Die Geburt der Seite, in drei Stufen (Simone, 19.09.2026: "mehr Dramatik"):
+   1. Der Laptop steht klein und weit hinten und fährt nach vorn
+   2. Dabei klappt der Deckel auf, der Bildschirm bleibt noch dunkel
+   3. Erst vorne angekommen erwacht die Seite, dann der Lichtstreifen */
+
+.laptop {
+  position: relative;
+  margin: 0;
+  transform: scale(0.34) translateY(120px);
+  opacity: 0;
+  filter: blur(7px);
+  transform-style: preserve-3d;
+  will-change: transform, opacity, filter;
+}
+
+/* Kommt klein, unscharf und weit hinten herein und fährt langsam
+   nach vorn, bis sie scharf und groß davorsteht. */
+.laptop.auf {
+  animation: heranfahren var(--t-heran) cubic-bezier(0.16, 0.84, 0.22, 1) forwards;
+}
+
+@keyframes heranfahren {
+  0%   { transform: scale(0.34) translateY(120px); opacity: 0; filter: blur(7px); }
+  22%  { opacity: 1; }
+  70%  { filter: blur(1.5px); }
+  100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
+}
+
+/* Das Aufklappen des Deckels ist bewusst raus (Simone, 19.09.2026):
+   Es las sich als "fährt von unten hoch" und übertönte das
+   Heranfahren. Jetzt gibt es nur noch EINE Bewegung. */
+.laptop-deckel {
+  position: relative;
+  border-radius: 14px 14px 4px 4px;
+  padding: 11px 11px 26px;
+  background: linear-gradient(165deg, #2A2A42 0%, var(--nacht) 58%, #101021 100%);
+  box-shadow: 0 34px 78px rgba(0, 0, 0, 0.45);
+}
+
+/* Die Seite erwacht MITTEN im Heranfahren, nicht danach.
+   Sonst steht der dunkle Bildschirm zu lange still (Simone, 19.09.2026). */
+.laptop-schirm video,
+.laptop-schirm img { opacity: 0; }
+
+.laptop.auf .laptop-schirm video,
+.laptop.auf .laptop-schirm img {
+  animation: erwachen var(--t-wach) ease var(--t-wach-ab) forwards;
+}
+
+@keyframes erwachen {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Kamerapunkt oben mittig */
+.laptop-deckel::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #4A4A63;
+}
+
+/* Markenschriftzug unter dem Bildschirm */
+.laptop-deckel::after {
+  content: 'simone katz';
+  position: absolute;
+  bottom: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.laptop-schirm {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #000000;
+}
+
+.laptop-schirm video,
+.laptop-schirm img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Ein Lichtstreifen wischt einmal über den Bildschirm */
+.laptop-glanz {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.4) 50%, transparent 62%);
+  transform: translateX(-120%);
+}
+
+.laptop.auf .laptop-glanz {
+  animation: wischen 1.4s ease-out var(--t-glanz-ab) 1;
+}
+
+@keyframes wischen {
+  to { transform: translateX(120%); }
+}
+
+.laptop-fuss {
+  height: 13px;
+  margin: 0 -22px;
+  border-radius: 0 0 13px 13px;
+  background: linear-gradient(180deg, #24243A 0%, #14142A 100%);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.4);
+}
+
+.laptop-fuss::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 6px;
+  width: 88px;
+  height: 4px;
+  border-radius: 0 0 6px 6px;
+  background: #0C0C1C;
+}
+
+.laptop.auf .laptop-fuss { animation: auftauchen 0.6s ease 1.4s forwards; }
+
+/* Der Text kommt erst, wenn der Laptop steht, und ganz sanft. */
+.laptop.auf ~ .laptop-untertitel {
+  animation: textkommt 1.6s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  animation-delay: calc(var(--t-heran) - 0.4s);
+}
+
+@keyframes textkommt {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Liegt auf der abgedunkelten Fläche des Fotos, damit das Bild die
+   volle Bildschirmhöhe bekommt (Simone, 19.09.2026). */
+/* Bewusst zweite Geige: Der Star ist die Webseite im Laptop
+   (Simone, 19.09.2026). Lauter als vorher, aber nie lauter als das Bild. */
+/* Erst das Bild, dann der Text (Simone, 19.09.2026). */
+.laptop-untertitel {
+  opacity: 0;
+  flex: 0 1 23%;
+  min-width: 0;
+  margin: 0;
+  text-align: left;
+  font-size: clamp(16px, 1.45vw, 23px);
+  font-weight: 600;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.82);
+  /* Nie ein einzelnes Wort allein in der letzten Zeile (Simones Regel) */
+  text-wrap: balance;
+}
+
+/* Variante B mit Strich (Simone, 26.09.2026): Name groß in Lime,
+   kurzer pinker Strich, Satz in Weiß. Der Name kommt zuerst,
+   Strich und Satz folgen zügig. */
+.laptop-untertitel.gestuft { flex-basis: 30%; }
+.laptop.auf ~ .laptop-untertitel.gestuft { animation: none; opacity: 1; }
+
+.lu-name,
+.lu-strich,
+.lu-satz { display: block; opacity: 0; }
+
+.lu-name {
+  font-family: var(--schrift-titel);
+  font-weight: 900;
+  font-size: clamp(30px, 4.4vw, 74px);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--lime);
+}
+
+.lu-strich {
+  width: 48px;
+  height: 4px;
+  margin: 0.55em 0 0.5em;
+  background: var(--pink);
+  font-size: clamp(16px, 2vw, 30px);
+}
+
+/* Satz in der ruhigen Textschrift, damit der Name vorn steht
+   (Simone, 26.09.2026, Variante 2). Zeilenumbruch per \n in hero.satz. */
+.lu-satz {
+  font-family: var(--schrift-text);
+  font-weight: 600;
+  white-space: pre-line;
+  font-size: clamp(16px, 2vw, 30px);
+  line-height: 1.3;
+  color: #FFFFFF;
+  text-wrap: balance;
+}
+
+.laptop.auf ~ .laptop-untertitel .lu-name {
+  animation: textkommt 1.1s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  animation-delay: var(--t-name-ab);
+}
+.laptop.auf ~ .laptop-untertitel .lu-strich {
+  animation: textkommt 0.6s ease forwards;
+  animation-delay: calc(var(--t-satz-ab) - 0.1s);
+}
+.laptop.auf ~ .laptop-untertitel .lu-satz {
+  animation: textkommt 1.1s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  animation-delay: var(--t-satz-ab);
+}
+
+/* Material mit eigenem Geräterahmen (Mockup-Video):
+   unser Laptop fällt weg, das Aufklappen bleibt. */
+.laptop.ohne-rahmen .laptop-deckel {
+  padding: 0;
+  background: transparent;
+  border-radius: 16px;
+  box-shadow: 0 30px 70px rgba(26, 26, 46, 0.26);
+  overflow: hidden;
+}
+
+.laptop.ohne-rahmen .laptop-deckel::before,
+.laptop.ohne-rahmen .laptop-deckel::after,
+.laptop.ohne-rahmen .laptop-fuss { display: none; }
+
+.laptop.ohne-rahmen .laptop-deckel {
+  display: flex;
+  justify-content: center;
+}
+
+.laptop.ohne-rahmen .laptop-schirm {
+  display: inline-block;
+  position: relative;
+  aspect-ratio: auto;
+  border-radius: 16px;
+  background: var(--nacht);
+}
+
+/* Weicher Übergang nach Mitternacht an ALLEN Kanten (Simone, 19.09.2026).
+   Oben verschwindet dadurch der fremde Rohr-Hintergrund, links läuft die
+   harte Schnittkante aus. Gelöst über eine Maske direkt am Bild, damit
+   die Ränder immer exakt am Foto sitzen. */
+.laptop.ohne-rahmen .laptop-schirm video,
+.laptop.ohne-rahmen .laptop-schirm img {
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 16%, #000 94%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 16%, #000 94%, transparent 100%);
+  mask-composite: intersect;
+}
+
+/* Beim Mockup-Video gibt es keine schwarze Bildschirmfläche, in die
+   hinein die Seite erwachen könnte. Ohne diese Regel entsteht dort
+   ein weißes Loch, statt Dunkelheit (gefunden 19.09.2026).
+   Deshalb ist das Material hier von Anfang an sichtbar, die Dramatik
+   trägt allein das Heranfahren. */
+.laptop.ohne-rahmen .laptop-schirm video,
+.laptop.ohne-rahmen .laptop-schirm img {
+  opacity: 1;
+  animation: none !important;
+}
+
+/* Das Foto muss IMMER ganz zu sehen sein, mit Tastatur und Hand
+   (Simone, 19.09.2026). Deshalb an die Bildschirmhöhe gebunden,
+   nicht an die Breite. Sonst läuft es unten aus dem Bild. */
+.laptop.ohne-rahmen .laptop-schirm video,
+.laptop.ohne-rahmen .laptop-schirm img {
+  height: auto;
+  max-height: 100vh;
+  max-height: 100dvh;
+  width: auto;
+  max-width: 100vw;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+/* ============================================================
+   Abschnitte allgemein
+   ============================================================ */
+
+.block-nummer {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pink);
+  margin-bottom: 10px;
+}
+
+.folie--nacht .block-nummer { color: var(--lime); }
+
+.block-titel {
+  font-size: clamp(23px, 4.6vw, 32px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.22;
+  text-wrap: balance;
+  margin-bottom: 10px;
+}
+
+.block-vorspann {
+  font-size: 16px;
+  color: var(--grau);
+  text-wrap: pretty;
+  max-width: 54ch;
+  margin-bottom: 34px;
+}
+
+.folie--nacht .block-vorspann { color: #C9C9D6; }
+
+/* Die Zeitleiste (Chronik der Zusammenarbeit) und die Liste
+   "Was deine Seite jetzt kann" sind am 19.09.2026 ersatzlos
+   gestrichen worden. Simone: "Teil 1 ist mit der Liveschaltung
+   hinter uns." Ihre Regel dazu steht in context/business.md. */
+
+/* ============================================================
+   Teil 1: was sie hat, Zahlen zählen hoch
+   ============================================================ */
+
+/* Vier Kacheln als zwei mal zwei (Simone, 26.09.2026) */
+.hat {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+/* Pinker Rahmen um jede Kachel (Simone, 20.09.2026).
+   Die Kacheln stellen sich nacheinander hin, erst danach laufen
+   die Zahlen los. Vorher zählten sie schon, während die Folie noch
+   aufblendete, und das las sich unruhig. */
+.hat li {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid var(--pink);
+  border-radius: 16px;
+  padding: 24px 22px;
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.hat li.da {
+  animation: kachelKommt 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+@keyframes kachelKommt {
+  to { opacity: 1; transform: none; }
+}
+
+.hat-zahl {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  color: var(--lime);
+  margin-bottom: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hat-einheit {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+  margin-bottom: 10px;
+  text-wrap: balance;
+}
+
+.hat-text {
+  font-size: 15px;
+  color: #FFFFFF;
+  text-wrap: pretty;
+}
+
+.hat-kopf {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-bottom: 4px;
+}
+
+.hat-kopf .hat-zahl { margin-bottom: 0; }
+
+/* Siegel von außen, z. B. „Top Rated" bei Beautinda */
+.hat-siegel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--pink);
+  color: #FFFFFF;
+  padding: 4px 9px;
+  border-radius: 4px;
+}
+
+/* Sterne neben der Zahl, in Weiß (Simone, 26.09.2026) */
+.sterne {
+  display: flex;
+  gap: 3px;
+  font-size: 16px;
+  line-height: 1;
+  color: #FFFFFF;
+}
+
+.sterne span {
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.sterne.an span { opacity: 1; transform: none; }
+.sterne.an span:nth-child(1) { transition-delay: 0.05s; }
+.sterne.an span:nth-child(2) { transition-delay: 0.14s; }
+.sterne.an span:nth-child(3) { transition-delay: 0.23s; }
+.sterne.an span:nth-child(4) { transition-delay: 0.32s; }
+.sterne.an span:nth-child(5) { transition-delay: 0.41s; }
+
+/* Schlusskasten in Lime mit dunkler Schrift (Simone, 26.09.2026,
+   vorher dunkel mit Lime-Kante, war ihr zu dunkel) */
+.hat-schluss {
+  margin-top: 24px;
+  padding: 22px 26px;
+  background: var(--lime);
+  border-radius: 14px;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.45;
+  text-wrap: balance;
+  color: var(--nacht);
+}
+
+/* ============================================================
+   Teil 3: Ausblick zum Aufklappen
+   ============================================================ */
+
+.ausblick { list-style: none; display: grid; gap: 12px; counter-reset: idee; }
+
+.ausblick > li {
+  counter-increment: idee;
+  background: var(--papier);
+  border: 1px solid var(--rand);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ausblick > li:has(.idee-knopf[aria-expanded="true"]) {
+  border-color: var(--pink-rand);
+  box-shadow: 0 6px 22px rgba(255, 0, 128, 0.08);
+}
+
+.idee-knopf {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 19px 20px;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 32px 1fr 22px;
+  gap: 14px;
+  align-items: center;
+}
+
+.idee-knopf::before {
+  content: counter(idee);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--nacht);
+  color: #FFFFFF;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.idee-titel {
+  font-size: 17px;
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+.idee-pfeil {
+  font-size: 13px;
+  color: var(--pink);
+  transition: transform 0.25s ease;
+  justify-self: end;
+}
+
+.idee-knopf[aria-expanded="true"] .idee-pfeil { transform: rotate(180deg); }
+
+.idee-inhalt {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+.idee-inhalt.offen { grid-template-rows: 1fr; }
+
+.idee-inhalt > div { overflow: hidden; }
+
+.idee-text {
+  padding: 0 20px 20px 66px;
+  font-size: 15px;
+  color: var(--grau);
+  text-wrap: pretty;
+}
+
+.ausblick-nachsatz {
+  margin-top: 24px;
+  font-size: 15px;
+  color: var(--grau-hell);
+  text-wrap: pretty;
+}
+
+/* ---- Folie 4, Erweiterungen (Simone, 26.09.2026, Maria) ---- */
+.idee-kopf { display: block; }
+.idee-wann {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pink);
+  margin-bottom: 3px;
+}
+.idee-neu {
+  display: inline-block;
+  font-family: var(--schrift-text);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  background: var(--pink);
+  color: #FFFFFF;
+  padding: 3px 7px;
+  border-radius: 4px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+/* Hauptpunkt hervorgehoben: pinker Rahmen, pinke Nummer */
+.ausblick > li.gross, .ausblick > li.gross:has(.idee-knopf[aria-expanded="true"]) { border: 2px solid var(--pink); }
+.ausblick > li.gross .idee-knopf::before { background: var(--pink); }
+.ausblick > li.gross .idee-titel { font-size: 20px; }
+
+/* Bausteine mit Lime-Häkchen */
+.idee-bausteine {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 18px;
+}
+.idee-bausteine li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--nacht);
+}
+.idee-bausteine li::before {
+  content: '✓';
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--nacht);
+  font-size: 12px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  margin-top: 1px;
+}
+
+/* Rechner-Karte: dunkel, Lime-Rahmen, kleine bewegte Vorschau */
+.ausblick > li.rechner, .ausblick > li.rechner:has(.idee-knopf[aria-expanded="true"]) { background: var(--nacht); border: 2px solid var(--lime); }
+.ausblick > li.rechner .idee-knopf::before { background: var(--lime); color: var(--nacht); }
+.ausblick > li.rechner .idee-titel { color: #FFFFFF; }
+.ausblick > li.rechner .idee-wann { color: var(--lime); }
+.ausblick > li.rechner .idee-text { color: #D6D6E2; }
+.idee-mit-mini { display: flex; gap: 18px; align-items: center; padding-right: 20px; }
+.idee-mit-mini .idee-text { flex: 1; min-width: 0; }
+.mini-rechner {
+  flex: none;
+  width: 210px;
+  margin-bottom: 20px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 14px 14px 12px;
+  color: var(--nacht);
+  box-shadow: 6px 6px 0 var(--pink);
+}
+.mr-frage { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #777777; }
+.mr-spur { position: relative; height: 6px; background: #EEEEEE; border-radius: 3px; margin: 11px 0 14px; }
+.mr-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 20%; background: var(--pink); border-radius: 3px; animation: mrSchieb 4s ease-in-out infinite; }
+.mr-knopf { position: absolute; top: 50%; left: 20%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: var(--pink); border: 3px solid #FFFFFF; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); animation: mrKnopf 4s ease-in-out infinite; }
+@keyframes mrSchieb { 0%, 10% { width: 20%; } 50%, 90% { width: 78%; } 100% { width: 20%; } }
+@keyframes mrKnopf  { 0%, 10% { left: 20%; }  50%, 90% { left: 78%; }  100% { left: 20%; } }
+.mr-ergebnis { font-family: var(--schrift-titel); font-weight: 900; font-size: 26px; line-height: 1; text-transform: uppercase; }
+.mr-ergebnis span { color: var(--pink); }
+.mr-klein { font-size: 10px; color: #999999; margin-top: 6px; }
+
+/* ---- Stil „projekte" (Z1 + Effekt E3, Simone 26.09.2026) ---- */
+.projekte-kicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nacht);
+}
+.projekte-linie { flex: 1; height: 1.5px; background: var(--pink); transform-origin: left; }
+.ausblick.projekte { counter-reset: none; }
+.ausblick.projekte > li {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 18px 24px;
+  background: #FFFFFF;
+  border: 1px solid #F6C6DD;
+  border-radius: 16px;
+  overflow: visible;
+}
+.ausblick.projekte > li.haupt { border: 2px solid var(--pink); padding: 22px 24px; }
+.pj-nr { width: 34px; height: 34px; border-radius: 50%; background: var(--nacht); color: #FFFFFF; display: grid; place-items: center; font-weight: 700; font-size: 15px; }
+.haupt .pj-nr { background: var(--pink); }
+.pj-titel { font-family: var(--schrift-titel); font-weight: 800; font-size: 20px; line-height: 1.2; text-wrap: balance; }
+.haupt .pj-titel { font-size: 23px; }
+.pj-text { font-size: 15px; color: var(--grau); margin-top: 4px; text-wrap: pretty; }
+.pj-wann { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--pink); white-space: nowrap; text-align: right; }
+
+/* Einflug: Linie zieht sich, Container gleiten nacheinander herein,
+   danach leuchtet der Hauptpunkt zweimal pink auf */
+.projekte-kicker.los .projekte-linie { animation: pjLinie 0.9s ease-out both; }
+.ausblick.projekte.los > li { animation: pjRein 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+.ausblick.projekte.los > li:nth-child(1) { animation-delay: 0.5s; }
+.ausblick.projekte.los > li:nth-child(2) { animation-delay: 0.9s; }
+.ausblick.projekte.los > li:nth-child(3) { animation-delay: 1.3s; }
+.ausblick.projekte.los > li.haupt:nth-child(1) { animation: pjRein 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.5s both, pjPuls 1.6s ease-in-out 2.3s 2; }
+@keyframes pjLinie { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes pjRein { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: none; } }
+@keyframes pjPuls { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 0, 128, 0); } 50% { box-shadow: 0 0 0 6px rgba(255, 0, 128, 0.25), 0 10px 50px rgba(255, 0, 128, 0.6); } }
+
+@media (max-width: 600px) {
+  .ausblick.projekte > li { grid-template-columns: 30px 1fr; }
+  .pj-wann { grid-column: 2; text-align: left; white-space: normal; }
+}
+@media print {
+  .ausblick.projekte > li, .projekte-linie { opacity: 1 !important; transform: none !important; animation: none !important; }
+}
+
+/* Signatur statt Nachsatz */
+.ausblick-nachsatz.mit-signatur { display: flex; align-items: center; gap: 14px; margin-top: 26px; }
+.sig-strich { width: 40px; height: 4px; background: var(--pink); }
+.ausblick-nachsatz.mit-signatur b { font-family: var(--schrift-titel); font-weight: 800; font-size: 18px; color: var(--nacht); }
+
+@media (max-width: 600px) {
+  .idee-bausteine { grid-template-columns: 1fr; }
+  .ausblick > li.gross .idee-titel { font-size: 17px; }
+  .idee-mit-mini { flex-direction: column; align-items: stretch; padding: 0 20px 0 0; }
+  .mini-rechner { margin: 0 0 20px 20px; }
+}
+
+/* ============================================================
+   Schlusswort
+   ============================================================ */
+
+/* Die einsame Kirschblüte über dem Schlusswort ist bewusst raus
+   (Simone, 19.09.2026): allein erkennt sie niemand als ihr Zeichen.
+   Sie steht nur noch hinter ihrem Namen und in der Marke unten
+   auf dem Startbildschirm. */
+
+.schluss-text {
+  font-size: 18px;
+  line-height: 1.66;
+  text-wrap: pretty;
+  max-width: 60ch;
+  margin: 0 auto 28px;
+  /* Absätze per \n im Schlusswort, keine Textwurst (Simone, 26.09.2026) */
+  white-space: pre-line;
+  text-wrap: balance;
+}
+
+.schluss-name { font-size: 18px; font-weight: 700; }
+
+.schluss-rolle {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--grau-hell);
+}
+
+/* ============================================================
+   PDF-Knopf, steht auf der Schluss-Folie
+   ============================================================ */
+
+.knopf-pdf {
+  margin-top: 38px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--nacht);
+  background: transparent;
+  border: 2px solid var(--nacht);
+  border-radius: 999px;
+  padding: 14px 30px;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.knopf-pdf:hover,
+.knopf-pdf:focus-visible { background: var(--nacht); color: #FFFFFF; }
+
+.fuss-hinweis {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--grau-hell);
+}
+
+/* ============================================================
+   Steuerleiste unten: anhalten, zurück, vor.
+   Sie macht aus der Folienfolge eine Videobotschaft, die die
+   Kundin jederzeit stoppen kann (Simone, 20.09.2026, Weg A).
+
+   Bewusst als echte runde Knöpfe mit Rand: Klickbares muss als
+   klickbar erkennbar sein (Simones Regel).
+   ============================================================ */
+
+.steuerung {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 66;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 22px rgba(26, 26, 46, 0.16);
+}
+
+.steuerung[hidden] { display: none; }
+
+/* Variante B (Simone, 26.09.2026): klein, leise, dunkel und halb
+   durchsichtig. Am großen Bildschirm unten links in der Ecke, am Handy
+   unten mittig (siehe max-width: 600px). Dunkel, damit sie auf hellen
+   und dunklen Folien gleich gut zu sehen ist. */
+.steuerung {
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(26, 26, 46, 0.55);
+  box-shadow: none;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+.steuerung:hover { opacity: 1; }
+.steuerung .st-knopf { width: 26px; height: 26px; font-size: 10px; background: transparent; border-color: rgba(255, 255, 255, 0.4); color: #FFFFFF; }
+.steuerung .st-knopf:hover, .steuerung .st-knopf:focus-visible { border-color: var(--pink); color: #FFFFFF; }
+.steuerung .st-punkt { width: 7px; height: 7px; background: rgba(255, 255, 255, 0.4); }
+.steuerung .st-punkt.da { background: var(--pink); }
+.steuerung .st-punkte { gap: 6px; margin-left: 4px; }
+@media (min-width: 601px) {
+  .steuerung { left: 26px; bottom: 22px; transform: none; }
+}
+
+.st-knopf {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--rand);
+  background: #FFFFFF;
+  color: var(--nacht);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.st-knopf:hover,
+.st-knopf:focus-visible { border-color: var(--pink); color: var(--pink); transform: scale(1.06); }
+
+.st-punkte { display: flex; gap: 7px; margin-left: 6px; }
+
+.st-punkt {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--rand);
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.st-punkt:hover { background: var(--grau-hell); }
+
+.st-punkt.da { background: var(--pink); transform: scale(1.3); }
+
+@media print { .steuerung { display: none !important; } }
+
+/* ============================================================
+   Notenknopf unten rechts (nur da, wenn eine Musikdatei hinterlegt ist)
+   ============================================================ */
+
+.knopf-ton {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 65;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--rand);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  color: var(--nacht);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(26, 26, 46, 0.14);
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.knopf-ton:hover,
+.knopf-ton:focus-visible { transform: scale(1.06); border-color: var(--pink); }
+
+.knopf-ton[aria-pressed="false"] { color: var(--grau-hell); }
+
+/* ============================================================
+   Regler-Kasten, nur für Simone.
+   Erscheint ausschliesslich, wenn ?regler an der Adresse steht.
+   Die Kundin sieht ihn nie.
+   ============================================================ */
+
+.regler-kasten {
+  position: fixed;
+  right: 18px;
+  bottom: 84px;
+  z-index: 90;
+  width: 290px;
+  max-height: 78vh;
+  overflow-y: auto;
+  padding: 18px 18px 16px;
+  border-radius: 16px;
+  background: rgba(26, 26, 46, 0.95);
+  backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.42);
+  font-size: 13px;
+}
+
+.regler-kasten h2 {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lime);
+  margin-bottom: 14px;
+}
+
+.regler-gruppe {
+  margin: 16px 0 9px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.regler-gruppe:first-of-type { margin-top: 0; }
+
+.regler-zeile { margin-bottom: 14px; }
+
+.regler-zeile label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 5px;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.regler-zeile label b {
+  font-variant-numeric: tabular-nums;
+  color: var(--lime);
+  font-weight: 700;
+}
+
+.regler-zeile input[type="range"] {
+  width: 100%;
+  accent-color: var(--pink);
+}
+
+.regler-knoepfe { display: flex; gap: 8px; margin-top: 4px; }
+
+/* Neustart samt Startbildschirm, ganz oben im Kasten (26.09.2026) */
+.regler-neustart {
+  display: block;
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 11px 8px;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  background: var(--lime);
+  color: var(--nacht);
+}
+
+.regler-knoepfe button {
+  flex: 1;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 10px 8px;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  background: var(--pink);
+  color: #FFFFFF;
+}
+
+.regler-knoepfe button.still {
+  background: rgba(255, 255, 255, 0.14);
+  color: #FFFFFF;
+}
+
+.regler-ausgabe {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.35);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--lime);
+  white-space: pre-wrap;
+  display: none;
+}
+
+.regler-ausgabe.da { display: block; }
+
+@media print { .regler-kasten { display: none !important; } }
+
+/* ============================================================
+   Handy
+   ============================================================ */
+
+@media (max-width: 600px) {
+  .bahn { padding: 0 16px; }
+  .folie-innen { padding: 26px 0 96px; }
+  /* Am Handy klebte der Text sonst am Rand (gefunden 26.09.2026) */
+  .folie-innen.bahn { padding-left: 16px; padding-right: 16px; }
+  .hat { grid-template-columns: 1fr; }
+  .idee-text { padding-left: 20px; }
+
+  /* Am Handy untereinander statt nebeneinander */
+  .geraet { flex-direction: column; gap: 22px; padding: 16px; }
+  .laptop-untertitel { flex: none; text-align: center; font-size: 16px; }
+  .lu-strich { margin-left: auto; margin-right: auto; }
+
+  /* Der Notenknopf würde sonst auf der Steuerleiste liegen */
+  .knopf-ton { bottom: auto; top: 18px; right: 16px; width: 40px; height: 40px; }
+  /* Am Handy wie Variante B: klein und leise, unten mittig */
+  .steuerung { bottom: 12px; }
+}
+
+/* ============================================================
+   Als PDF speichern: alles offen, nichts bewegt
+   ============================================================ */
+
+@media print {
+  #konfetti, #fortschritt, #start, .knopf-ton,
+  .knopf-pdf, .fuss-hinweis, .idee-pfeil { display: none !important; }
+
+  /* Im PDF ist es wieder ein Dokument, keine Folienfolge:
+     alle Folien stehen untereinander und sind vollständig zu lesen. */
+  html, body { height: auto !important; overflow: visible !important; }
+  #seite { position: static !important; }
+
+  .folie {
+    position: static !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    display: block !important;
+    overflow: visible !important;
+    break-inside: avoid;
+    /* Ohne diese Zeile greift die visibility-Überblendung der Folien
+       noch 1,1 Sekunden lang, und das PDF kommt halb leer heraus
+       (gemessen am 20.09.2026). */
+    transition: none !important;
+  }
+
+  .folie-innen { padding: 16px 0 !important; }
+
+  body { background: #FFFFFF; color: #000000; }
+  .folie--jubel, .folie--hell, .folie--schluss { background: #FFFFFF !important; }
+
+  .folie--nacht, .folie--buehne { background: #FFFFFF !important; color: #000000 !important; }
+  .folie--nacht .block-vorspann { color: #444444 !important; }
+  /* Die Kacheln kommen im Film nacheinander herein, im PDF stehen
+     sie sofort alle da. Ohne diese Zeile wären sie dort unsichtbar. */
+  .hat li {
+    background: #FFFFFF !important;
+    border: 1px solid #FF0080 !important;
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  .hat-zahl { color: #FF0080 !important; }
+  .hat-einheit { color: #666666 !important; }
+  .hat-text, .hat-schluss { color: #000000 !important; }
+  .hat-schluss { background: #F7F7F7 !important; }
+
+  .laptop { transform: none !important; opacity: 1 !important; filter: none !important; animation: none !important; }
+  .laptop-deckel { transform: none !important; opacity: 1 !important; animation: none !important; }
+  .laptop-schirm img, .laptop-schirm video { opacity: 1 !important; animation: none !important; }
+  .laptop-untertitel, .lu-name, .lu-strich, .lu-satz { opacity: 1 !important; animation: none !important; }
+  .laptop-fuss { opacity: 1 !important; animation: none !important; }
+  .geraet { min-height: 0 !important; }
+  .laptop-glanz { display: none !important; }
+  .sterne span { opacity: 1 !important; transform: none !important; }
+
+  /* Die Ausblick-Ideen stehen im PDF immer offen */
+  .idee-inhalt { grid-template-rows: 1fr !important; }
+  .idee-inhalt > div { overflow: visible !important; }
+  .idee-knopf { cursor: default; }
+
+  .hat li, .ausblick > li { break-inside: avoid; }
+  .bahn { max-width: none; padding: 0; }
+  a { color: inherit; text-decoration: none; }
+}
+
+/* ============================================================
+   Wer keine Animationen mag
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .start-blume, .knopf-los::after { animation: none; }
+  .folie { transform: none; transition: opacity 0.2s linear, visibility 0s; }
+  .knopf-los, .idee-pfeil, .idee-inhalt { transition: none; }
+}
