@@ -472,6 +472,14 @@
     var teil1 = document.querySelector('.folie--nacht');
     if (teil1) teil1.parentNode.removeChild(teil1);
   }
+  /* Ohne Zahlen und Ausblick gibt es nichts zum Nachlesen, deshalb
+     auch kein „Als PDF speichern“ (Simone, 23.10.2026: „Quatsch“). */
+  if (K.ohneZahlen && K.ohneAusblick) {
+    ['#knopf-pdf', '.fuss-hinweis'].forEach(function (w) {
+      var e = document.querySelector(w);
+      if (e) e.parentNode.removeChild(e);
+    });
+  }
 
   var folien = [];
   var jetzigeFolie = -1;
@@ -1099,7 +1107,7 @@
      Als PDF speichern
      ---------------------------------------------------------- */
 
-  finde('#knopf-pdf').addEventListener('click', function () {
+  if (finde('#knopf-pdf')) finde('#knopf-pdf').addEventListener('click', function () {
     /* Der Film hält an, sonst wechselt im Hintergrund die Folie,
        während das Druckfenster offen ist. */
     anhalten();
