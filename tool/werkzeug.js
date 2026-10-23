@@ -650,7 +650,10 @@
 
     var text = K.firma + ' ist online.';
     text.split('').forEach(function (z, i) {
-      var s = el('span', 'buchstabe', z === ' ' ? ' ' : z);
+      /* Leerzeichen als normales Leerzeichen, damit lange Namen
+         am Handy umbrechen (23.10.2026, Daphne lief über den Rand) */
+      if (z === ' ') { ziel.appendChild(document.createTextNode(' ')); return; }
+      var s = el('span', 'buchstabe', z);
       s.style.animationDelay = (0.5 + i * 0.045) + 's';
       ziel.appendChild(s);
     });
