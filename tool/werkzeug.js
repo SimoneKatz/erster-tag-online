@@ -466,6 +466,12 @@
     var nummer = document.querySelector('.folie--nacht .block-nummer');
     if (nummer) nummer.style.display = 'none';
   }
+  /* Ohne Zahlen (Simone, 23.10.2026, Daphne): ohneZahlen: true lässt
+     Folie 3 „Das hast du schon“ weg. Ablauf dann Geschafft → Laptop → Danke. */
+  if (K.ohneZahlen) {
+    var teil1 = document.querySelector('.folie--nacht');
+    if (teil1) teil1.parentNode.removeChild(teil1);
+  }
 
   var folien = [];
   var jetzigeFolie = -1;
