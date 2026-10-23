@@ -458,6 +458,15 @@
      Kacheln vorher stehen (Simone, 20.09.2026). */
   var zahlenAb = K.zahlenAb || 2.1;
 
+  /* Abgespeckte Fassung (Simone, 23.10.2026, Daphne): ohneAusblick: true
+     lässt Folie 4 ganz weg, dann auch kein „Teil 1“ über Folie 3. */
+  if (K.ohneAusblick) {
+    var teil2 = document.querySelector('.folie--hell');
+    if (teil2) teil2.parentNode.removeChild(teil2);
+    var nummer = document.querySelector('.folie--nacht .block-nummer');
+    if (nummer) nummer.style.display = 'none';
+  }
+
   var folien = [];
   var jetzigeFolie = -1;
   var uhr = null;
