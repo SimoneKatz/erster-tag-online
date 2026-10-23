@@ -474,7 +474,7 @@
   }
   /* Ohne Zahlen und Ausblick gibt es nichts zum Nachlesen, deshalb
      auch kein „Als PDF speichern“ (Simone, 23.10.2026: „Quatsch“). */
-  if (K.ohneZahlen && K.ohneAusblick) {
+  if ((K.ohneZahlen && K.ohneAusblick) || K.ohnePdf) {
     ['#knopf-pdf', '.fuss-hinweis'].forEach(function (w) {
       var e = document.querySelector(w);
       if (e) e.parentNode.removeChild(e);
